@@ -3,6 +3,7 @@
 Honeypot + minimal time + HMAC potpis za Laravel forme — **zero‑config** i plug‑and‑play.  
 Radi na **Laravel 7–11** i **PHP 7.4+**.
 
+
 > ✅ Brza integracija: `<x-antibot::fields form="contact" />` u formu + `AntiBot::check($request, 'contact')` u kontroler **ili** route middleware `->middleware('antibot:contact')`.
 
 ---
@@ -49,6 +50,7 @@ Radi na **Laravel 7–11** i **PHP 7.4+**.
 ## Instalacija
 
 ```bash
+composer config repositories.fer-antibot vcs https://github.com/fer-projekt/laravel-antibot
 composer require fer-projekt/laravel-antibot
 php artisan vendor:publish --provider="FerProjekt\AntiBot\AntiBotServiceProvider" --tag=config
 # (opcionalno) publish views ako želiš override:
