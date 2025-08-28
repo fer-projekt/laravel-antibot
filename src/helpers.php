@@ -23,3 +23,14 @@ if (!function_exists('antibot_markup')) {
         return view('antibot::fields', get_object_vars($c))->render();
     }
 }
+
+if (!function_exists('antibot_data')) {
+    /**
+     * Vrati podatke za antibot view (za @include).
+     */
+    function antibot_data(string $form = 'default'): array
+    {
+        $c = new Fields($form);
+        return get_object_vars($c);
+    }
+}
