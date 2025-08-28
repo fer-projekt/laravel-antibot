@@ -4,6 +4,7 @@ namespace FerProjekt\AntiBot;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Blade;
+use FerProjekt\AntiBot\View\Components\Fields;
 
 class AntiBotServiceProvider extends ServiceProvider
 {
