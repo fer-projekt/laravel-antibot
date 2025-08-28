@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use FerProjekt\AntiBot\AntiBot;
+use FerProjekt\AntiBot\View\Components\Fields;
 
 if (!function_exists('antibot_verify')) {
     /**

@@ -26,7 +26,7 @@ class AntiBotServiceProvider extends ServiceProvider
 
         // 2) Blade direktiva — @antibot('contact')
         Blade::directive('antibot', function ($expression) {
-            return "<?php echo \\FerProjekt\\AntiBot\\antibot_markup{$expression}; ?>";
+            return "<?php echo \\FerProjekt\\AntiBot\\antibot_markup({$expression}); ?>";
         });
 
         // Publishes + middleware alias kao i prije
