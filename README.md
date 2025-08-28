@@ -204,7 +204,7 @@ File: `config/antibot.php`
 return [
     'min_seconds' => 3,        // minimal time to fill the form
     'max_seconds' => 7200,     // maximum validity of signature
-    'honeypot_prefix' => '_hp_',
+    'honeypot_prefix' => '_email_',
 
     // Optionally include IP in signature (stricter; watch out for proxy/load balancer setup):
     'include_ip_in_signature' => false,
