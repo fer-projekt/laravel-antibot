@@ -4,12 +4,21 @@ Honeypot + minimal time + HMAC potpis za Laravel forme — **zero‑config** i p
 Radi na **Laravel 7–11** i **PHP 7.4+**.
 
 
-> ✅ Brza integracija: `<x-antibot::fields form="contact" />` u formu + `AntiBot::check($request, 'contact')` u kontroler **ili** route middleware `->middleware('antibot:contact')`.
+# Instalacija
+
+composer config repositories.fer-antibot vcs https://github.com/fer-projekt/laravel-antibot
+composer require fer-projekt/laravel-antibot
+php artisan vendor:publish --provider="FerProjekt\AntiBot\AntiBotServiceProvider" --tag=config
+## (opcionalno) publish views ako želiš override:
+## php artisan vendor:publish --provider="FerProjekt\AntiBot\AntiBotServiceProvider" --tag=views
+
+# ✅ Brza integracija: 
+@include('antibot::fields', antibot_data('contact')) u formu 
+AntiBot::check($request, 'contact') u kontroler **ili** route middleware ->middleware('antibot:contact').
 
 ---
 
 ## Sadržaj
-- [Značajke](#značajke)
 - [Zahtjevi](#zahtjevi)
 - [Instalacija](#instalacija)
 - [Brzi start](#brzi-start)
@@ -29,16 +38,6 @@ Radi na **Laravel 7–11** i **PHP 7.4+**.
 
 ---
 
-## Značajke
-
-- 🪤 **Honeypot** polje s dinamičnim imenom (teže gađanje botovima).
-- ⏱️ **Minimalno vrijeme ispunjavanja** (npr. ≥ 3s).
-- 🔐 **HMAC potpis** (`session_id + form_id + timestamp`), opcionalno veže i **IP**.
-- 🛡️ Radi uz **CSRF** middleware (Laravel default).
-- 🚦 Jednostavno dodaj **rate limit** za dodatni sloj zaštite.
-- 🧩 **Komponenta + middleware + helper** — koristiš što ti paše.
-
----
 
 ## Zahtjevi
 
@@ -64,7 +63,7 @@ php artisan vendor:publish --provider="FerProjekt\AntiBot\AntiBotServiceProvider
 1) U **Blade** formu ubaci polja:
 
 ```blade
-<x-antibot::fields form="contact" />
+@include('antibot::fields', antibot_data('contact'))
 ```
 
 2) U **kontroleru** provjeri anti‑bot u jednoj liniji **ili** koristi **middleware**:
@@ -92,7 +91,7 @@ Route::post('/contact', [ContactController::class, 'store'])
 ```blade
 <form method="POST" action="{{ route('contact.store') }}">
     @csrf
-    <x-antibot::fields form="contact" />
+    @include('antibot::fields', antibot_data('contact'))
 
     <!-- tvoja polja -->
     <input type="text" name="name" required>
