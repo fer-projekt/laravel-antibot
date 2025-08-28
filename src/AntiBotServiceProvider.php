@@ -18,14 +18,13 @@ class AntiBotServiceProvider extends ServiceProvider
     {
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'antibot');
 
-        // Ostavimo i namespace registration (za one kojima radi <x-antibot::fields>)
-        Blade::componentNamespace('FerProjekt\\AntiBot\\View\\Components', 'antibot');
-
-        // 1) Flat alias — <x-antibot-fields form="..."/>
-        Blade::component('FerProjekt\\AntiBot\\View\\Components\\Fields', 'antibot-fields');
-
-        // 2) Blade direktiva — @antibot('contact')
+        // Jednostavan pristup - samo direktive
         Blade::directive('antibot', function ($expression) {
+            return "<?php echo \\FerProjekt\\AntiBot\\antibot_markup({$expression}); ?>";
+        });
+
+        // Direktiva za fields
+        Blade::directive('antibotFields', function ($expression) {
             return "<?php echo \\FerProjekt\\AntiBot\\antibot_markup({$expression}); ?>";
         });
 
