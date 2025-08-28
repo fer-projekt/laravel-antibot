@@ -1,81 +1,80 @@
 # Laravel AntiBot (fer-projekt)
 
-Honeypot + minimal time + HMAC potpis za Laravel forme — **zero‑config** i plug‑and‑play.  
-Radi na **Laravel 7–11** i **PHP 7.4+**.
+Honeypot + minimal time + HMAC signature for Laravel forms — **zero-config** and plug-and-play.  
+Works with **Laravel 7–11** and **PHP 7.4+**.
 
+### Installation
 
-# Instalacija
+- composer config repositories.fer-antibot vcs https://github.com/fer-projekt/laravel-antibot
+- composer require fer-projekt/laravel-antibot
+- php artisan vendor:publish --provider="FerProjekt\AntiBot\AntiBotServiceProvider" --tag=config
+- - (optional) publish views if you want to override:
+- -  php artisan vendor:publish --provider="FerProjekt\AntiBot\AntiBotServiceProvider" --tag=views
 
-composer config repositories.fer-antibot vcs https://github.com/fer-projekt/laravel-antibot
-composer require fer-projekt/laravel-antibot
-php artisan vendor:publish --provider="FerProjekt\AntiBot\AntiBotServiceProvider" --tag=config
-## (opcionalno) publish views ako želiš override:
-## php artisan vendor:publish --provider="FerProjekt\AntiBot\AntiBotServiceProvider" --tag=views
-
-# ✅ Brza integracija: 
-@include('antibot::fields', antibot_data('contact')) u formu 
-AntiBot::check($request, 'contact') u kontroler **ili** route middleware ->middleware('antibot:contact').
-
----
-
-## Sadržaj
-- [Zahtjevi](#zahtjevi)
-- [Instalacija](#instalacija)
-- [Brzi start](#brzi-start)
-- [Upotreba](#upotreba)
-  - [Blade komponenta](#blade-komponenta)
-  - [Kontroler (1 linija)](#kontroler-1-linija)
-  - [Route middleware (bez koda u kontroleru)](#route-middleware-bez-koda-u-kontroleru)
-  - [Helper funkcija](#helper-funkcija)
-  - [Primjer s FormRequest-om](#primjer-s-formrequest-om)
-- [Rate limiting (preporuka)](#rate-limiting-preporuka)
-- [Konfiguracija](#konfiguracija)
-- [Override pogleda (views)](#override-pogleda-views)
-- [Kako radi](#kako-radi)
-- [Savjeti i napomene](#savjeti-i-napomene)
-- [Rješavanje problema](#rješavanje-problema)
-- [Licenca](#licenca)
+### ✅ Quick integration:
+1. add -> @include('antibot::fields', antibot_data('contact')) **--into your form--**
+2. add -> AntiBot::check($request, 'contact') **--into your controller--**  
+- 2.1  **or add**  route middleware ->middleware('antibot:contact').
 
 ---
 
+## Table of contents
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Quick start](#quick-start)
+- [Usage](#usage)
+  - [Blade component](#blade-component)
+  - [Controller (1 line)](#controller-1-line)
+  - [Route middleware (no controller code)](#route-middleware-no-controller-code)
+  - [Helper function](#helper-function)
+  - [FormRequest example](#formrequest-example)
+- [Rate limiting (recommended)](#rate-limiting-recommended)
+- [Configuration](#configuration)
+- [Override views](#override-views)
+- [How it works](#how-it-works)
+- [Tips and notes](#tips-and-notes)
+- [Troubleshooting](#troubleshooting)
+- [License](#license)
 
-## Zahtjevi
+---
+
+## Requirements
 
 - PHP **7.4+**
 - Laravel **7.x – 11.x**
 
 ---
 
-## Instalacija
+## Installation
 
 ```bash
 composer config repositories.fer-antibot vcs https://github.com/fer-projekt/laravel-antibot
 composer require fer-projekt/laravel-antibot
 php artisan vendor:publish --provider="FerProjekt\AntiBot\AntiBotServiceProvider" --tag=config
-# (opcionalno) publish views ako želiš override:
+# (optional) publish views if you want to override:
 # php artisan vendor:publish --provider="FerProjekt\AntiBot\AntiBotServiceProvider" --tag=views
 ```
 
 ---
 
-## Brzi start
+## Quick start
 
-1) U **Blade** formu ubaci polja:
+1) In your **Blade form**, add the fields:
 
 ```blade
 @include('antibot::fields', antibot_data('contact'))
 ```
 
-2) U **kontroleru** provjeri anti‑bot u jednoj liniji **ili** koristi **middleware**:
+2) In your **controller**, check anti-bot in one line **or** use **middleware**:
 
 ```php
 use FerProjekt\AntiBot\AntiBot;
 
 AntiBot::check($request, 'contact');
-// ...ostatak validacije / spremanja
+// ...rest of validation / saving
 ```
 
-**Alternativa:**
+**Alternative:**
 
 ```php
 Route::post('/contact', [ContactController::class, 'store'])
@@ -84,25 +83,25 @@ Route::post('/contact', [ContactController::class, 'store'])
 
 ---
 
-## Upotreba
+## Usage
 
-### Blade komponenta
+### Blade component
 
 ```blade
 <form method="POST" action="{{ route('contact.store') }}">
     @csrf
     @include('antibot::fields', antibot_data('contact'))
 
-    <!-- tvoja polja -->
+    <!-- your fields -->
     <input type="text" name="name" required>
     <input type="email" name="email" required>
     <textarea name="message" required></textarea>
 
-    <button type="submit">Pošalji</button>
+    <button type="submit">Send</button>
 </form>
 ```
 
-### Kontroler (1 linija)
+### Controller (1 line)
 
 ```php
 use Illuminate\Http\Request;
@@ -121,12 +120,12 @@ class ContactController
         ]);
 
         // ... save / mail ...
-        return back()->with('status', 'Poruka poslana!');
+        return back()->with('status', 'Message sent!');
     }
 }
 ```
 
-### Route middleware (bez koda u kontroleru)
+### Route middleware (no controller code)
 
 ```php
 use App\Http\Controllers\ContactController;
@@ -135,15 +134,15 @@ Route::post('/contact', [ContactController::class, 'store'])
      ->middleware('antibot:contact');
 ```
 
-### Helper funkcija
+### Helper function
 
-Paket sadrži helper `antibot_verify()`:
+This package ships with a helper `antibot_verify()`:
 
 ```php
-antibot_verify($request, 'contact'); // isto kao AntiBot::check($request, 'contact')
+antibot_verify($request, 'contact'); // same as AntiBot::check($request, 'contact')
 ```
 
-### Primjer s FormRequest-om
+### FormRequest example
 
 ```php
 use Illuminate\Foundation\Http\FormRequest;
@@ -169,12 +168,12 @@ class StoreContactRequest extends FormRequest
 
 ---
 
-## Rate limiting (preporuka)
+## Rate limiting (recommended)
 
-### Laravel 7 — klasični throttle
+### Laravel 7 — classic throttle
 ```php
 Route::post('/contact', [ContactController::class, 'store'])
-     ->middleware(['antibot:contact','throttle:10,1']); // 10 req/min po IP-u
+     ->middleware(['antibot:contact','throttle:10,1']); // 10 req/min per IP
 ```
 
 ### Laravel 8+ — `RateLimiter` API
@@ -191,82 +190,58 @@ RateLimiter::for('form-contact', function (Request $request) {
     ];
 });
 
-// ruta
-Route::post('/contact', [ContactController::class, 'store'])
-     ->middleware(['antibot:contact','throttle:form-contact']);
+// route
+Route::post('/contact', [ContactController::class, 'store'])->middleware(['antibot:contact','throttle:form-contact']);
 ```
 
 ---
 
-## Konfiguracija
+## Configuration
 
-Datoteka: `config/antibot.php`
+File: `config/antibot.php`
 
 ```php
 return [
-    'min_seconds' => 3,        // minimalno vrijeme ispunjavanja
-    'max_seconds' => 7200,     // maksimalna valjanost potpisa
+    'min_seconds' => 3,        // minimal time to fill the form
+    'max_seconds' => 7200,     // maximum validity of signature
     'honeypot_prefix' => '_hp_',
 
-    // Opcionalno u potpis uključi IP (strože; pazi na proxy/load balancer setup):
+    // Optionally include IP in signature (stricter; watch out for proxy/load balancer setup):
     'include_ip_in_signature' => false,
 ];
 ```
-
-> 🔑 **Napomena za APP_KEY**: Laravel APP_KEY u `.env` često počinje s `base64:` — paket to već obrađuje.
-
 ---
 
-## Override pogleda (views)
+## Override views
 
-Ako želiš prilagoditi markup/sk hiding honeypot polja:
+If you want to customize the markup / hiding of honeypot fields:
 
 ```bash
 php artisan vendor:publish --provider="FerProjekt\AntiBot\AntiBotServiceProvider" --tag=views
 ```
 
-Zatim mijenjaj `resources/views/vendor/antibot/fields.blade.php`.
+Then edit `resources/views/vendor/antibot/fields.blade.php`.
 
 ---
 
-## Kako radi
+## How it works
 
-1. **Komponenta** generira:
-   - `_ab_form` (ID forme koju očekuješ na backendu)
-   - `_ab_ts` (timestamp rendera forme)
-   - `_ab_sig` (HMAC potpis podataka; ključ je `APP_KEY`)
-   - **honeypot** polje s **dinamičnim imenom** (prefiks iz konfiguracije)
+1. **Component** generates:
+   - `_ab_form` (expected form ID)
+   - `_ab_ts` (timestamp when form was rendered)
+   - `_ab_sig` (HMAC signature of the data; key is `APP_KEY`)
+   - **honeypot** field with a **dynamic name** (prefix defined in config)
 
-2. **Provjera** (`AntiBot::check` ili `middleware`):
-   - Form ID mora odgovarati
-   - Honeypot mora biti **prazan**
-   - Prošlo je barem `min_seconds`, a manje od `max_seconds`
-   - HMAC potpis je ispravan (opcija: veže i na IP)
+2. **Check** (`AntiBot::check` or `middleware`):
+   - Form ID must match
+   - Honeypot must be **empty**
+   - At least `min_seconds` passed, but less than `max_seconds`
+   - HMAC signature is valid (optionally bound to IP)
 
-3. **CSRF** štiti zasebno (Laravel `VerifyCsrfToken` middleware).
-
----
-
-## Savjeti i napomene
-
-- Ne koristi `display:none` za honeypot; bolje ga pomaknuti izvan ekrana (default u view-u).
-- Dimenzije/pozicija honeypota su minimalne da ne ometaju UX niti screenreadere.
-- **Logiraj promašaje** (ValidationException) po želji za praćenje patterna botova.
-- **Dodaj reCAPTCHA/hCaptcha/Turnstile** samo za sumnjive slučajeve ako treba — često neće trebati.
-- Za **SPAs/AJAX**: komponenta se mora renderirati pri svakom prikazu forme (timestamp/potpis su per‑render).
+3. **CSRF** protection works separately (Laravel `VerifyCsrfToken` middleware).
 
 ---
 
-## Rješavanje problema
-
-- **`Neispravan potpis`**: provjeri `APP_KEY` i session (isti user/session mora poslati formu).
-- **`Prebrzo slanje forme`**: korisnik je submit-ao brže od `min_seconds`. Povećaj ili prilagodi UI.
-- **`Forma je istekla`**: proteklo više od `max_seconds`. Re-renderiraj formu ili povećaj limit.
-- **Reverse proxy/CDN**: ako uključiš `include_ip_in_signature`, pobrini se da `Request::ip()` vraća stvarni IP.
-- **Session driver**: treba biti omogućen (standardni Laravel session middleware).
-
----
-
-## Licenca
+## License
 
 MIT © fer-projekt
