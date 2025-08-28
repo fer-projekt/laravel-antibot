@@ -22,7 +22,7 @@ class AntiBotServiceProvider extends ServiceProvider
         Blade::componentNamespace('FerProjekt\\AntiBot\\View\\Components', 'antibot');
 
         // 1) Flat alias — <x-antibot-fields form="..."/>
-        Blade::component(Fields::class, 'antibot-fields');
+        Blade::component('FerProjekt\\AntiBot\\View\\Components\\Fields', 'antibot-fields');
 
         // 2) Blade direktiva — @antibot('contact')
         Blade::directive('antibot', function ($expression) {
