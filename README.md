@@ -1,7 +1,7 @@
 # Laravel AntiBot (fer-projekt)
 
 **Advanced bot protection for Laravel forms** — Honeypot + Time validation + HMAC signatures + Rate limiting + JavaScript detection + **Automatic unique form IDs**.  
-Works with **Laravel 7–11** and **PHP 7.4+**.
+Works with **Laravel 7–12** and **PHP 7.4+**.
 
 ## 🛡️ Protection Features
 
