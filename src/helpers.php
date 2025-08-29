@@ -6,9 +6,9 @@ use FerProjekt\AntiBot\View\Components\Fields;
 
 if (!function_exists('antibot_verify')) {
     /**
-     * Helper funkcija: antibot_verify($request, 'contact');
+     * Helper funkcija: antibot_verify($request) ili antibot_verify($request, 'contact')
      */
-    function antibot_verify(Request $request, string $formId, ?int $minSeconds = null, ?int $maxSeconds = null): void
+    function antibot_verify(Request $request, ?string $formId = null, ?int $minSeconds = null, ?int $maxSeconds = null): void
     {
         AntiBot::check($request, $formId, $minSeconds, $maxSeconds);
     }
@@ -17,9 +17,24 @@ if (!function_exists('antibot_verify')) {
 if (!function_exists('antibot_data')) {
     /**
      * Vrati podatke za antibot view (za @include).
+     * Ako se ne preda form ID, automatski generiraj unique ID.
      */
-    function antibot_data(string $form = 'default'): array
+    function antibot_data(?string $form = null): array
     {
+        if ($form === null) {
+            // Automatski generiraj unique ID na osnovu trenutne lokacije
+            $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
+            $caller = $backtrace[0] ?? [];
+            $viewCaller = $backtrace[1] ?? [];
+            
+            // Kombinacija: file path + line number + timestamp za unique ID  
+            $uniqueData = ($caller['file'] ?? 'unknown') . ':' . 
+                         ($caller['line'] ?? '0') . ':' . 
+                         request()->path();
+            
+            $form = 'auto_' . substr(hash('sha256', $uniqueData), 0, 8);
+        }
+        
         $c = new Fields($form);
         return get_object_vars($c);
     }

@@ -4,13 +4,14 @@ namespace FerProjekt\AntiBot;
 
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Cache;
 
 class AntiBot
 {
     /**
      * Server-side provjera anti-bot polja.
      */
-    public static function check(Request $request, string $expectedFormId, ?int $minSeconds = null, ?int $maxSeconds = null): void
+    public static function check(Request $request, ?string $expectedFormId = null, ?int $minSeconds = null, ?int $maxSeconds = null): void
     {
         $min = $minSeconds ?? (int) config('antibot.min_seconds', 3);
         $max = $maxSeconds ?? (int) config('antibot.max_seconds', 7200);
@@ -19,8 +20,11 @@ class AntiBot
         $ts     = (int) $request->input('_ab_ts', 0);
         $sig    = (string) $request->input('_ab_sig', '');
 
-        // 1) Form ID mora odgovarati
-        if ($formId !== $expectedFormId) {
+        // 0) Rate limiting check
+        static::checkRateLimit($request);
+
+        // 1) Form ID mora odgovarati (skip ako je expectedFormId null = auto mode)
+        if ($expectedFormId !== null && $formId !== $expectedFormId) {
             throw ValidationException::withMessages(['form' => 'Neispravan identifikator forme.']);
         }
 
@@ -58,6 +62,60 @@ class AntiBot
             throw ValidationException::withMessages(['signature' => 'Neispravan potpis.']);
         }
 
+        // 5) JavaScript detection
+        static::checkJavaScript($request);
+
         // CSRF rješava VerifyCsrfToken middleware — ne diramo.
+    }
+
+    /**
+     * Rate limiting provjera
+     */
+    private static function checkRateLimit(Request $request): void
+    {
+        $maxAttempts = (int) config('antibot.max_attempts_per_hour', 20);
+        if ($maxAttempts <= 0) return; // Disabled
+
+        $ip = $request->ip();
+        $key = "antibot_rate_limit:{$ip}";
+        
+        $attempts = Cache::get($key, 0);
+        
+        if ($attempts >= $maxAttempts) {
+            throw ValidationException::withMessages(['rate_limit' => 'Preveći broj pokušaja. Pokušajte ponovno za sat vremena.']);
+        }
+
+        // Increment counter
+        Cache::put($key, $attempts + 1, 3600); // 1 hour
+    }
+
+    /**
+     * JavaScript detection provjera
+     */
+    private static function checkJavaScript(Request $request): void
+    {
+        if (!config('antibot.require_javascript', true)) return; // Disabled
+
+        $jsEnabled = (string) $request->input('_ab_js', '');
+        $jsTimestamp = (int) $request->input('_ab_js_ts', 0);
+        $jsScreen = (string) $request->input('_ab_screen', '');
+
+        // JavaScript mora biti omogućen
+        if ($jsEnabled !== '1') {
+            throw ValidationException::withMessages(['javascript' => 'JavaScript mora biti omogućen.']);
+        }
+
+        // JavaScript timestamp mora biti valjan
+        $jsMaxAge = (int) config('antibot.js_max_age', 3600);
+        $jsAge = time() - ($jsTimestamp / 1000); // JS koristi milisekunde
+        
+        if ($jsAge < 0 || $jsAge > $jsMaxAge) {
+            throw ValidationException::withMessages(['javascript' => 'JavaScript timestamp nije valjan.']);
+        }
+
+        // Screen info mora postojati
+        if (empty($jsScreen) || !str_contains($jsScreen, 'x') || !str_contains($jsScreen, '|')) {
+            throw ValidationException::withMessages(['javascript' => 'Nedostaju podaci o pregledniku.']);
+        }
     }
 }

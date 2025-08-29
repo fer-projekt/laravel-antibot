@@ -1,13 +1,14 @@
 {
   "name": "fer-projekt/laravel-antibot",
-  "description": "Honeypot + minimal time + HMAC potpis za Laravel forme (PHP 7.4+).",
+  "description": "Advanced bot protection: Honeypot + Time validation + HMAC signatures + Rate limiting + JavaScript detection + Auto form IDs (PHP 7.4+).",
   "type": "library",
   "license": "MIT",
   "require": {
     "php": ">=7.4",
     "illuminate/support": "^7.0|^8.0|^9.0|^10.0|^11.0",
     "illuminate/http": "^7.0|^8.0|^9.0|^10.0|^11.0",
-    "illuminate/view": "^7.0|^8.0|^9.0|^10.0|^11.0"
+    "illuminate/view": "^7.0|^8.0|^9.0|^10.0|^11.0",
+    "illuminate/cache": "^7.0|^8.0|^9.0|^10.0|^11.0"
   },
   "autoload": {
     "psr-4": {
