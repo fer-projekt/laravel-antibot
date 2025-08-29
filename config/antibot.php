@@ -21,4 +21,10 @@ return [
 
     // JavaScript timeout - najduže vrijeme između JS i server timestampa (sekunde)
     'js_max_age' => 3600,
+
+    // Supported languages for error messages (add new languages here)
+    'supported_languages' => ['hr', 'en', 'de'],
+
+    // Default fallback language when detection fails
+    'fallback_language' => 'en',
 ];

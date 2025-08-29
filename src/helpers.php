@@ -39,3 +39,41 @@ if (!function_exists('antibot_data')) {
         return get_object_vars($c);
     }
 }
+
+if (!function_exists('antibot_trans')) {
+    /**
+     * Translate antibot messages with locale detection and fallback.
+     */
+    function antibot_trans(string $key): string
+    {
+        // Get supported languages from config
+        $supportedLocales = (array) config('antibot.supported_languages', ['hr', 'en', 'de']);
+        $fallbackLocale = (string) config('antibot.fallback_language', 'en');
+        
+        // Detect locale: app locale → browser → config fallback
+        $locale = app()->getLocale();
+        
+        // If current locale is not supported, try browser detection
+        if (!in_array($locale, $supportedLocales)) {
+            $browserLocale = request()->getPreferredLanguage($supportedLocales) ?? $fallbackLocale;
+            $locale = $browserLocale;
+        }
+        
+        // Load translation file for antibot package
+        $langPath = __DIR__ . "/../resources/lang/{$locale}/antibot.php";
+        
+        if (file_exists($langPath)) {
+            $translations = include $langPath;
+            return $translations[$key] ?? $translations['form_invalid'] ?? 'Validation error.';
+        }
+        
+        // Ultimate fallback - load configured fallback language
+        $fallbackPath = __DIR__ . "/../resources/lang/{$fallbackLocale}/antibot.php";
+        if (file_exists($fallbackPath)) {
+            $translations = include $fallbackPath;
+            return $translations[$key] ?? 'Validation error.';
+        }
+        
+        return 'Validation error.';
+    }
+}

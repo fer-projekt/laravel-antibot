@@ -70,11 +70,14 @@ That's it! Your form is now protected against bots with **automatic unique IDs**
 - [Installation](#-installation)
 - [Quick Start](#-quick-start)
 - [Usage Examples](#-usage-examples)
-- [Configuration](#-configuration)
-- [Protection Features](#-protection-features)
+- [Configuration](#️-configuration)
+- [Protection Features](#️-protection-features-detail)
 - [Error Handling](#-error-handling)
 - [Testing](#-testing)
+- [Advanced Usage](#-advanced-usage)
+- [Helper Functions](#-helper-functions)
 - [Troubleshooting](#-troubleshooting)
+- [How It Works](#-how-it-works)
 
 ---
 
@@ -92,25 +95,6 @@ That's it! Your form is now protected against bots with **automatic unique IDs**
     <textarea name="message" required></textarea>
     
     <button type="submit">Send Message</button>
-</form>
-```
-
-### Multiple Forms on Same Page (Auto Mode)
-
-```blade
-{{-- Newsletter form --}}
-<form method="POST" action="{{ route('newsletter') }}">
-    @include('antibot::fields', antibot_data()) {{-- Unique ID: auto_a1b2c3d4 --}}
-    <input type="email" name="email" required>
-    <button type="submit">Subscribe</button>
-</form>
-
-{{-- Contact form --}}  
-<form method="POST" action="{{ route('contact') }}">
-    @include('antibot::fields', antibot_data()) {{-- Unique ID: auto_e5f6g7h8 --}}
-    <input type="text" name="name" required>
-    <textarea name="message" required></textarea>
-    <button type="submit">Send</button>
 </form>
 ```
 
@@ -230,6 +214,10 @@ return [
     // JavaScript detection (NEW)
     'require_javascript' => true,  // Require JavaScript-enabled browsers
     'js_max_age' => 3600,         // Max age of JavaScript timestamp (1 hour)
+    
+    // Multilingual support (NEW)
+    'supported_languages' => ['hr', 'en', 'de'], // Supported error message languages
+    'fallback_language' => 'en',                 // Default fallback language
 ];
 ```
 
@@ -237,7 +225,7 @@ return [
 
 ## 🛡️ Protection Features Detail
 
-### 1. Automatic Unique Form IDs (NEW)
+### 1. Automatic Unique Form IDs
 - Zero-config protection for multiple forms
 - Each form gets unique ID based on file location and URL
 - Prevents form signature reuse across different forms
@@ -273,12 +261,20 @@ return [
 - Validates JavaScript timestamp age
 - **Detection**: Missing JS data = Bot or JS disabled
 
+### 7. Multilingual Support (NEW)
+- Automatic language detection from Laravel app locale
+- Browser language fallback detection
+- Configurable supported languages (HR, EN, DE by default)
+- Easy addition of new languages
+- **How it works**: `app()->getLocale()` → `Accept-Language` → `config fallback`
+
 ---
 
 ## 🚨 Error Handling
 
-The package automatically displays user-friendly error messages:
+The package automatically displays user-friendly error messages **in multiple languages**:
 
+**🇭🇷 Croatian (hr):**
 - **"Neispravan identifikator forme."** - Form ID mismatch
 - **"Detektiran bot unos."** - Honeypot triggered  
 - **"Prebrzo slanje forme."** - Submitted too quickly
@@ -286,6 +282,26 @@ The package automatically displays user-friendly error messages:
 - **"Neispravan potpis."** - Invalid signature
 - **"Preveći broj pokušaja. Pokušajte ponovno za sat vremena."** - Rate limited
 - **"JavaScript mora biti omogućen."** - JavaScript required
+
+**🇬🇧 English (en):**
+- **"Invalid form identifier."** - Form ID mismatch
+- **"Bot input detected."** - Honeypot triggered
+- **"Form submitted too quickly."** - Submitted too quickly
+- **"Form has expired, please try again."** - Form expired
+- **"Invalid signature."** - Invalid signature
+- **"Too many attempts. Please try again in an hour."** - Rate limited
+- **"JavaScript must be enabled."** - JavaScript required
+
+**🇩🇪 German (de):**
+- **"Ungültige Formular-Kennung."** - Form ID mismatch
+- **"Bot-Eingabe erkannt."** - Honeypot triggered
+- **"Formular zu schnell übermittelt."** - Submitted too quickly
+- **"Formular ist abgelaufen, bitte versuchen Sie es erneut."** - Form expired
+- **"Ungültige Signatur."** - Invalid signature
+- **"Zu viele Versuche. Bitte versuchen Sie es in einer Stunde erneut."** - Rate limited
+- **"JavaScript muss aktiviert sein."** - JavaScript required
+
+**Language detection:** App locale → Browser `Accept-Language` → Config fallback
 
 Errors are styled with inline CSS (no framework dependencies).
 
@@ -320,44 +336,32 @@ Expected fields:
 
 ---
 
-## 🔧 Advanced Usage
-
-### Automatic vs Manual Form IDs
-
-**🎯 Auto Mode (Recommended):**
-```blade
-{{-- Each form gets unique auto-generated ID --}}
-@include('antibot::fields', antibot_data())
-@include('antibot::fields', antibot_data())
-@include('antibot::fields', antibot_data())
-```
-
-```php
-// All controllers use the same simple call
-AntiBot::check($request); // Works for all forms automatically!
-```
-
-**🛠️ Manual Mode (Full Control):**
-```blade
-{{-- Specific IDs for each form --}}
-@include('antibot::fields', antibot_data('contact'))
-@include('antibot::fields', antibot_data('newsletter'))  
-@include('antibot::fields', antibot_data('register'))
-```
-
-```php
-// Controllers must specify exact form IDs
-AntiBot::check($request, 'contact');
-AntiBot::check($request, 'newsletter');
-AntiBot::check($request, 'register');
-```
-
 ### Disable Specific Features
 ```php
 // In config/antibot.php
 
 'max_attempts_per_hour' => 0,    // Disable rate limiting
 'require_javascript' => false,   // Disable JavaScript requirement
+```
+
+### Adding New Languages
+```php
+// 1. Add to config/antibot.php
+'supported_languages' => ['hr', 'en', 'de', 'fr', 'es'], // Add 'fr', 'es'
+'fallback_language' => 'en',
+
+// 2. Create language files (optional: publish lang files first)
+# php artisan vendor:publish --provider="FerProjekt\AntiBot\AntiBotServiceProvider" --tag=lang
+
+// 3. Create resources/lang/vendor/antibot/fr/antibot.php
+<?php
+return [
+    'form_invalid' => 'Identifiant de formulaire invalide.',
+    'bot_detected' => 'Entrée de bot détectée.',
+    // ... rest of translations
+];
+
+// 4. That's it! Automatic detection will work
 ```
 
 ### Helper Functions
@@ -379,14 +383,6 @@ $data = antibot_data('contact');  // Specific form ID
 
 ## ❓ Troubleshooting
 
-### "Unable to locate a class or view for component"
-- **Old versions used Blade components (no longer supported)**
-- **Solution**: Use only `@include('antibot::fields', antibot_data('form_id'))`
-
-### "Undefined variable $ts"  
-- **Cause**: Using `@include` without `antibot_data()` helper
-- **Solution**: Always use `@include('antibot::fields', antibot_data('form_id'))`
-
 ### JavaScript Detection Failing
 - Check if JavaScript is enabled in browser
 - Verify form fields aren't cached/prefilled incorrectly
@@ -401,28 +397,6 @@ $data = antibot_data('contact');  // Specific form ID
 - Users with JavaScript disabled: Set `require_javascript => false`
 - Slow internet/users: Increase `max_seconds` 
 - Shared IPs: Increase `max_attempts_per_hour` or disable
-
----
-
-## 🔗 Helper Functions
-
-### Available Functions
-```php
-// Main validation (throws ValidationException)
-AntiBot::check(Request $request, ?string $formId = null);
-
-// Alternative helper  
-antibot_verify(Request $request, ?string $formId = null);
-
-// Get form data for @include
-antibot_data(?string $formId = null): array;
-
-// Examples:
-AntiBot::check($request);           // Auto mode
-AntiBot::check($request, 'contact'); // Manual mode
-antibot_data();                     // Auto-generated ID: auto_a1b2c3d4
-antibot_data('contact');            // Manual ID: contact
-```
 
 ---
 

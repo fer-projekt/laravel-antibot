@@ -25,7 +25,7 @@ class AntiBot
 
         // 1) Form ID mora odgovarati (skip ako je expectedFormId null = auto mode)
         if ($expectedFormId !== null && $formId !== $expectedFormId) {
-            throw ValidationException::withMessages(['form' => 'Neispravan identifikator forme.']);
+            throw ValidationException::withMessages(['form' => antibot_trans('form_invalid')]);
         }
 
         $prefix = (string) config('antibot.honeypot_prefix', '_hp_');
@@ -34,16 +34,16 @@ class AntiBot
         })->isNotEmpty();
 
         if ($hpFilled) {
-            throw ValidationException::withMessages(['bot' => 'Detektiran bot unos.']);
+            throw ValidationException::withMessages(['bot' => antibot_trans('bot_detected')]);
         }
 
         // 3) Vrijeme
         $elapsed = time() - $ts;
         if ($elapsed < $min) {
-            throw ValidationException::withMessages(['speed' => 'Prebrzo slanje forme.']);
+            throw ValidationException::withMessages(['speed' => antibot_trans('too_fast')]);
         }
         if ($elapsed > $max) {
-            throw ValidationException::withMessages(['expired' => 'Forma je istekla, pokušaj ponovno.']);
+            throw ValidationException::withMessages(['expired' => antibot_trans('expired')]);
         }
 
         // 4) Potpis (HMAC)
@@ -59,7 +59,7 @@ class AntiBot
 
         $expected = hash_hmac('sha256', $data, $key);
         if (!hash_equals($expected, $sig)) {
-            throw ValidationException::withMessages(['signature' => 'Neispravan potpis.']);
+            throw ValidationException::withMessages(['signature' => antibot_trans('invalid_signature')]);
         }
 
         // 5) JavaScript detection
@@ -82,7 +82,7 @@ class AntiBot
         $attempts = Cache::get($key, 0);
         
         if ($attempts >= $maxAttempts) {
-            throw ValidationException::withMessages(['rate_limit' => 'Preveći broj pokušaja. Pokušajte ponovno za sat vremena.']);
+            throw ValidationException::withMessages(['rate_limit' => antibot_trans('rate_limit')]);
         }
 
         // Increment counter
@@ -102,7 +102,7 @@ class AntiBot
 
         // JavaScript mora biti omogućen
         if ($jsEnabled !== '1') {
-            throw ValidationException::withMessages(['javascript' => 'JavaScript mora biti omogućen.']);
+            throw ValidationException::withMessages(['javascript' => antibot_trans('javascript_required')]);
         }
 
         // JavaScript timestamp mora biti valjan
@@ -110,12 +110,12 @@ class AntiBot
         $jsAge = time() - ($jsTimestamp / 1000); // JS koristi milisekunde
         
         if ($jsAge < 0 || $jsAge > $jsMaxAge) {
-            throw ValidationException::withMessages(['javascript' => 'JavaScript timestamp nije valjan.']);
+            throw ValidationException::withMessages(['javascript' => antibot_trans('javascript_invalid')]);
         }
 
         // Screen info mora postojati
         if (empty($jsScreen) || !str_contains($jsScreen, 'x') || !str_contains($jsScreen, '|')) {
-            throw ValidationException::withMessages(['javascript' => 'Nedostaju podaci o pregledniku.']);
+            throw ValidationException::withMessages(['javascript' => antibot_trans('browser_data_missing')]);
         }
     }
 }

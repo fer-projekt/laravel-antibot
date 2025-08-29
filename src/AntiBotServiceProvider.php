@@ -25,6 +25,10 @@ class AntiBotServiceProvider extends ServiceProvider
             __DIR__ . '/../resources/views' => resource_path('views/vendor/antibot'),
         ], 'views');
 
+        $this->publishes([
+            __DIR__ . '/../resources/lang' => resource_path('lang/vendor/antibot'),
+        ], 'lang');
+
         $this->app['router']->aliasMiddleware(
             'antibot',
             \FerProjekt\AntiBot\Http\Middleware\VerifyAntiBot::class
