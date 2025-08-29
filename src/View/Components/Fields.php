@@ -16,7 +16,7 @@ class Fields extends Component
         $this->form = $form;
         $this->ts = time();
 
-        $prefix = (string) config('antibot.honeypot_prefix', '_email_');
+        $prefix = (string) config('antibot.honeypot_prefix', '_hp_');
         $this->honeyName = $prefix . substr(
             hash('sha1', $this->form . session()->getId() . random_int(1, PHP_INT_MAX)),
             0,

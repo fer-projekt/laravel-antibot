@@ -8,7 +8,7 @@ return [
     'max_seconds' => 7200,
 
     // Prefiks za honeypot polje (ime je dinamično, ali koristi ovaj prefiks)
-    'honeypot_prefix' => '_email_',
+    'honeypot_prefix' => '_hp_',
 
     // Po želji veži potpis i na IP (strože, ali pazi na proxy-je/load balancere)
     'include_ip_in_signature' => false,

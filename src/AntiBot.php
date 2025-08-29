@@ -24,7 +24,7 @@ class AntiBot
             throw ValidationException::withMessages(['form' => 'Neispravan identifikator forme.']);
         }
 
-        $prefix = (string) config('antibot.honeypot_prefix', '_email_');
+        $prefix = (string) config('antibot.honeypot_prefix', '_hp_');
         $hpFilled = collect($request->all())->filter(function ($v, $k) use ($prefix) {
             return is_string($k) && strpos($k, $prefix) === 0 && !empty($v);
         })->isNotEmpty();
