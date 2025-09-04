@@ -20,7 +20,7 @@ Works with **Laravel 7–12** and **PHP 7.4+**.
 
 ```bash
 composer config repositories.fer-antibot vcs https://github.com/fer-projekt/laravel-antibot
-composer require fer-projekt/laravel-antibot
+composer require fer-projekt/laravel-antibot:^1.1
 php artisan vendor:publish --provider="FerProjekt\AntiBot\AntiBotServiceProvider" --tag=config
 # (optional) publish views if you want to override:
 # php artisan vendor:publish --provider="FerProjekt\AntiBot\AntiBotServiceProvider" --tag=views
